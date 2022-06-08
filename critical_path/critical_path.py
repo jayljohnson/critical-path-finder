@@ -33,9 +33,9 @@ def get_edge_weight_for_node(node_weights: typing.List[typing.List[any]]) -> typ
     """
     Convert a list of lists to a dict[n1]: weight
     """  
-    result = dict([(n, int(t)) for n, t in node_weights])
+    result = dict([(u, int(w)) for u, w in node_weights])
     print(f"node_weights result: {result}")
-    return result       
+    return result
 
 
 def ri(min: int = 1, max: int = 10) -> int:
@@ -71,8 +71,17 @@ def graph_filtered_by_nodes(graph, nodes: typing.List[any]):
     return SG
 
 
-def draw_graph(G, filename: str):
-    nx.draw_planar(G, with_labels=True)
+def draw_graph(G, filename: str, highlighted_edges=None, default_edge_color = 'blue', default_edge_highlight_color = 'red'):
+    # Set the default color for all nodes
+    for e in G.edges():
+        G[e[0]][e[1]]['color'] = default_edge_color
+    # Set highlighted edge colors, for critical path highlighting or other use cases
+    if highlighted_edges:
+        for u, v in highlighted_edges:
+            G[u][v]['color'] = default_edge_highlight_color
+    # Set all edge colors
+    edge_color_list = [ G[e[0]][e[1]]['color'] for e in G.edges() ]
+    nx.draw_planar(G, with_labels=True, edge_color=edge_color_list)
     plt.savefig(filename, format="PNG")
     plt.clf()
 
@@ -94,7 +103,7 @@ print("\n*** Weights assigned ***")
 print(G)
 
 longest_path_nodes = nx.dag_longest_path(G)
-print(f"Longest path nodes: {longest_path_nodes}")
+print(f"Longest path nodes: {longest_path_nodes}") 
 
 SG = graph_filtered_by_nodes(graph=G, nodes = longest_path_nodes)
 
@@ -107,10 +116,10 @@ if longest_path_nodes_filtered != longest_path_nodes:
       f"original nodes: {longest_path_nodes}, filtered nodes: {longest_path_nodes_filtered}"
       )
 
-print(f"\nFiltered Nodes: {SG.nodes}")
-print(f"Filtered Edges: {SG.edges}")
+print(f"\nFiltered Nodes: {SG.nodes}") #debug
+print(f"Filtered Edges: {SG.edges}") #debug
+print(f"Filtered Weighted Edges: {nx.get_edge_attributes(SG, 'weight')}") #debug
 
 draw_graph(SG, filename="SGraph.png")
 
-# TODO: Draw edge labels
-#https://stackoverflow.com/questions/47094949/labeling-edges-in-networkx
+draw_graph(G, filename="CriticalPathGraph.png", highlighted_edges=SG.edges)
