@@ -31,28 +31,20 @@ def read_edge_weights(path: str) -> typing.List[typing.List[any]]:
 
 def get_edge_weight_for_node(node_weights: typing.List[typing.List[any]]) -> typing.Dict[any, any]:
     """
-    Convert a list of lists to a dict[n1]: weight
+    Assigns a weight to edges based on a property of the predecessor node
+    An example use case is to assign the task execution duration of a node to all edges where the node is the predecessor.
     """  
     result = dict([(u, int(w)) for u, w in node_weights])
     print(f"node_weights result: {result}")
     return result
 
 
-def ri(min: int = 1, max: int = 10) -> int:
-    """Random integer (ri)"""
-    import random
-
-    return random.randint(min, max)
-
-
-# TODO: The predecessor node defines the weight for all edges between itself and any downstream successor nodes.
+# The predecessor node defines the weight for all edges between itself and any downstream successor nodes.
 #  For example, if the duration of the node named `main` is 2 hours, the edges (main, parse), (main, cleanup), 
 #  and all others like (main, *) have the same weight of 2.  
 #  To do this, need the list of nodes with their execution duration.
 #  There must always be a `end` task with no weight value.  
 #  Every predecessor task must have at least one descendent, which will either be the `end` task or any other downstream task.
-# TODO:
-#  Nice to have is the node start and end timestamps, this can come later after the basics are working.
 def get_edge_weights(G, node_weights: typing.List[typing.List[any]], default_weight: int = 1):
     """
     Convert a list of lists to a dict[n1]: weight
