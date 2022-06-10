@@ -13,9 +13,6 @@
     1. With static inputs
     1. With user-submitted inputs
 1. Store user-submitted input and results
-1. Render the edge weights
-1. Render the node start and end timestamp info
-
 
 # Credits
 Dot file example: https://www.graphviz.org/pdf/dotguide.pdf
