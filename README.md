@@ -1,11 +1,29 @@
+# Usage
+
+1. Clone the package into a local directory
+1. Run as a script. Options:
+   1. Using the provided sample inputs with `python critical_path.py`
+   2. Or pass in paths to your own input and output locations using
+`python critical_path.py -g input/sample_graph.dot -w input/sample_weights.csv -i ../target`
+1. View the output image of the graph
+
+## Generating a dotviz graph .dot file
+1. Airflow cli:  `airflow dags show <DAG_ID> –save output.dot`
+
 # Features
 
-1. Read a dotviz file into a networx directed acyclic graph representing a graph of tasks
-    1. Add the airflow cli command to get the dotviz output 
+## Inputs
+1. Read a graph of tasks from a dotviz file
 1. Read a csv input containing the list tasks with their execution time
-1. Return the critical path nodes the graph, using the execution time as the edge weights
-1. Assign a color to the critical path edges
-1. Return an image of the graph with the critical path highlighted
+
+## Arguments
+* -g: path to the graph .dot file
+* -f: path to the node weight mapping in csv format
+* -i: path to where the graph image is saved in png format
+
+## Outputs
+1. Return the critical path nodes the graph, using the execution time as the edge weights of the graph
+1. Save an image of the graph with the critical path highlighted
 
 # Backlog
 1. Layout the graph in left-to-right format, so that edge arrows are always directed towards the right
@@ -15,4 +33,5 @@
 1. Store user-submitted input and results
 
 # Credits
-Dot file example: https://www.graphviz.org/pdf/dotguide.pdf
+* Dot file example: https://www.graphviz.org/pdf/dotguide.pdf
+* Production Operations Management, {TODO: Get book details}

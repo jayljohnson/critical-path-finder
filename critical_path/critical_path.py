@@ -5,6 +5,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from uuid import uuid4
 
+# TODO: Change print statements to logging
+
 # The predecessor node defines the weight for all edges between itself and any downstream successor nodes.
 #  For example, if the duration of the node named `main` is 2 hours, the edges (main, parse), (main, cleanup), 
 #  and all others like (main, *) have the same weight of 2.  
@@ -49,7 +51,8 @@ def get_edge_weight_for_node(node_weights: typing.List[typing.List[any]]) -> typ
 
 def get_edge_weights(G, node_weights: typing.List[typing.List[any]], default_weight: int = 1):
     """
-    Assign the same weight to all edges of u.  Needed for critical path calcs.
+    Assign the same weight to all edges of u.  
+    Needed for critical path calcs.
     """ 
     node_weight_map = get_edge_weight_for_node(node_weights)
     result = {(u, v): node_weight_map.get(u, default_weight) for u, v in G.edges }
@@ -58,6 +61,10 @@ def get_edge_weights(G, node_weights: typing.List[typing.List[any]], default_wei
 
 
 def get_edges_from_ordered_list_of_nodes(nodes: typing.List[any]):
+    """
+    For each ordered pair of nodes in the list, 
+    create a list of tuples in the same order 
+    """
     edges = [(nodes[i], nodes[i+1]) for i in range(len(nodes)-1)]
     print(f"\nEdges from ordered list of nodes: {edges}") 
 
@@ -69,9 +76,12 @@ def draw_graph(
         save_path: str,
         filename: str, 
         highlighted_edges=None, 
-        default_edge_color = 'blue', 
-        default_edge_highlight_color = 'red',
+        default_edge_color='blue', 
+        default_edge_highlight_color ='red',
         edge_labels = None):
+    """
+    Apply formatting, add labels, and highlight the critical path by color
+    """
 
     print("\nDrawing graph")
     # Set the default color for all nodes
@@ -94,12 +104,11 @@ def draw_graph(
 
 
 if __name__ == "__main__":
-
+    # TODO: Class with run method, that returns the `longest_path_nodes`
     print("\n*** Calculating the critical path ***")
     
-    import optparse
-
     print("\nParsing command line options.")
+    import optparse
     p = optparse.OptionParser()
     p.add_option('--graph', '-g', default="input/sample_graph.dot")
     p.add_option('--weights', '-w', default="input/sample_weights.csv")
