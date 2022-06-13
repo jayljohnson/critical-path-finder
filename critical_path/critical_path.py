@@ -3,44 +3,45 @@
 import typing
 import logging
 import networkx as nx
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 from uuid import uuid4
 from csv import reader
 import optparse
 
 
 logging.basicConfig(
-    filename='../target/logs/critical-path.log', 
-    encoding='utf-8', 
+    filename='../target/logs/critical-path.log',
+    encoding='utf-8',
     level=logging.INFO,
     format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
-    )
+)
+
 
 class CriticalPath():
     """
     The predecessor node defines the weight for all edges between itself and any downstream successor nodes.
-    For example, if the duration of the node named `main` is 2 hours, the edges (main, parse), (main, cleanup), 
+    For example, if the duration of the node named `main` is 2 hours, the edges (main, parse), (main, cleanup),
     and all others like (main, *) have the same weight of 2.
     To do this, need the list of nodes with their execution duration.
     There must always be a `end` task with no weight value.
     Every predecessor task must have at least one descendent, which will either be the `end` task or any other downstream task.
     """
     EDGE_WEIGHT_ATTRIBUTE_NAME = "weight"
+    EDGE_COLOR_ATTRIBUTE_NAME = "color"
 
     # None is the default intentionally to support loading from files from the CLI.
     # If importing this into another python application, directly pass in the objects
-    def __init__(self, node_weights=None, graph=None):
-        self.node_weights: typing.List[typing.List[any]] = node_weights
+    def __init__(self, node_weights_map=None, graph=None):
+        logging.info("Creating CriticalPath object")
+        self.node_weights_map: typing.Dict[any, int] = node_weights_map
         self.graph: nx.DiGraph = graph
-        # These get set after calling the run() method; it's also the CLI output
         self.critical_path_edges = None
         self.critical_path_length = None
 
-
     def load_graph(self, path):
         """
-        Reads a dotviz .dot file representing a digraph.  
+        Reads a dotviz .dot file representing a digraph.
         Used by CLI -g flag to pass in a file path.
         """
         logging.info("Loading graph from dot file")
@@ -49,88 +50,110 @@ class CriticalPath():
         logging.info(f"\tGraph loaded: {G}")
         logging.info(f"\tNodes: {G.nodes}")
         logging.info(f"\tEdges: {G.edges}")
-        self.graph=G
+        self.graph = G
 
-
-    def load_weights(self, path):
+    def load_weights(self, path) -> None:
         """
         Load weights from a csv file containing the node and the node property,
          to be assigned to all edge weights where that node is the predecessor
         Used by CLI -w flag to pass in a file path.
         """
         with open(path, 'r') as read_obj:
-            # pass the file object to reader() to get the reader object
             csv_reader = reader(read_obj)
-            # Pass reader object to list() to get a list of lists
             node_weights = list(csv_reader)[1:]
-            logging.info(f"Node weight map from {path}: {node_weights}")
-            self.node_weights=node_weights
+            node_weights_map = {}
+            for node, weight in node_weights:
+                if not node_weights_map.get(node):
+                    node_weights_map[node] = int(weight)
+            logging.info(f"Node weight map from {path}: {node_weights_map}")
+            self.node_weights_map = node_weights_map
 
+    def validate(self) -> None:
+        """
+        Input validations before running calcs in the run() method
+        """
+        if not self.node_weights_map:
+            raise Exception("Undefined instance variable: self.node_weights_map")
 
-    def run(self) -> typing.List[any]:
+        if not self.graph:
+            raise Exception("Undefined instance variable: self.graph")
+
+        if list(self.graph.nodes).sort() != list(self.node_weights_map.keys()).sort():
+            raise Exception("The set of graph nodes and the node weight nodes must be the same")
+
+    def run(self) -> typing.Dict[tuple, int]:
         """
         Calculate the critical path and return the list of critical path edges
         """
+        self.validate()
         edge_weights = self._get_edge_weights()
         nx.set_edge_attributes(self.graph, edge_weights, self.EDGE_WEIGHT_ATTRIBUTE_NAME)
         longest_path_nodes = nx.dag_longest_path(self.graph)
-        self.critical_path_length = nx.dag_longest_path_length(self.graph)
         self.critical_path_edges = self._get_edges_from_ordered_list_of_nodes(longest_path_nodes)
-        return {(u, v): edge_weights[(u, v)] for u, v in self.critical_path_edges}
+        self.critical_path_length = nx.dag_longest_path_length(self.graph)
+        result = {(u, v): edge_weights[(u, v)] for u, v in self.critical_path_edges}
+        return result
 
-
-    def save_image(self, path: str):
+    def save_image(self, path: str) -> None:
         """
         Generate an image of the graph with the critical path highlighted
         """
-        EDGE_COLOR_DEFAULT = 'blue'
-        EDGE_COLOR_CRITICAL_PATH ='red'
-        SAVE_PATH = path
+        EDGE_COLOR_DEFAULT = "blue"
+        EDGE_COLOR_CRITICAL_PATH = "red"
+        FILE_EXTENSION = "png"
         FILENAME_PREFIX = "CriticalPathGraph"
 
+        self.validate()
+        if not self.critical_path_edges:
+            raise Exception(
+                "Undefined instance variable: self.critical_path_edges"
+                "Must call self.run() to calculate the critical path, "
+                "before calling self.save_image()"
+            )
+
         logging.info("Drawing graph")
+        # Assign edge labels
+        edge_labels = nx.get_edge_attributes(self.graph, self.EDGE_WEIGHT_ATTRIBUTE_NAME)
+        pos = nx.planar_layout(self.graph)
+        nx.draw_networkx_edge_labels(self.graph, pos=pos, edge_labels=edge_labels)
+
         # Set the default color for all nodes
         for u, v in self.graph.edges():
-            self.graph[u][v]['color'] = EDGE_COLOR_DEFAULT
-        # Set highlighted edge colors, for critical path highlighting or other use cases
+            self.graph[u][v][self.EDGE_COLOR_ATTRIBUTE_NAME] = EDGE_COLOR_DEFAULT
+        # Set highlighted edge colors, for critical path highlighting
         for u, v in self.critical_path_edges:
-            self.graph[u][v]['color'] = EDGE_COLOR_CRITICAL_PATH
-        # Set all edge colors
-        edge_color_list = [ self.graph[u][v]['color'] for u, v in self.graph.edges() ]
-        pos=nx.planar_layout(self.graph)
-        edge_labels = nx.get_edge_attributes(self.graph, self.EDGE_WEIGHT_ATTRIBUTE_NAME)
-
-        nx.draw_networkx_edge_labels(self.graph, pos=pos, edge_labels=edge_labels)
+            self.graph[u][v][self.EDGE_COLOR_ATTRIBUTE_NAME] = EDGE_COLOR_CRITICAL_PATH
+        # Assign all edge colors
+        edge_color_list = [self.graph[u][v][self.EDGE_COLOR_ATTRIBUTE_NAME] for u, v in self.graph.edges()]
         nx.draw_planar(self.graph, with_labels=True, edge_color=edge_color_list)
-        filename_full = f"{SAVE_PATH}/{FILENAME_PREFIX}-{uuid4()}.png"
+
+        filename_full = f"{path}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
         logging.info(f"\tSaving image to: {filename_full} ")
-        plt.savefig(filename_full, format="PNG")
+        plt.savefig(filename_full, format=FILE_EXTENSION)
         logging.info("\tDone saving image")
         plt.clf()
 
+    def _get_edge_weights(self) -> typing.Dict[tuple, int]:
+        """
+        Assign the same weight to all edges of u.
 
-    def _get_edge_weights(self, default_weight: int = 1) -> typing.Dict[tuple, int]:
+        The graph assumes task-on-node.
+        Therefore all edges that have the same predecessor node u also share the same weight.
         """
-        Assign the same weight to all edges of u.  
-        Needed for critical path calcs.
-        """
-        node_weight_map = dict([(u, int(w)) for u, w in self.node_weights])
-        logging.info(f"Edge weights for node: {node_weight_map}")
-        result = {(u, v): node_weight_map.get(u, default_weight) for u, v in self.graph.edges }
+        result = {(u, v): self.node_weights_map[u] for u, v in self.graph.edges}
         logging.info(f"Edge weights: {result}")
         return result
 
-
     @staticmethod
-    def _get_edges_from_ordered_list_of_nodes(nodes: typing.List[any]):
+    def _get_edges_from_ordered_list_of_nodes(nodes: typing.List[any]) -> typing.List[tuple]:
         """
-        For each ordered pair of nodes in the list, 
-        create a list of tuples in the same order 
+        Convert ordered list of individual nodes to an ordered list of edge tuples.
+        The successor node of one tuple becomes the predecessor node of the next tuple.
         """
-        edges = [(nodes[i], nodes[i+1]) for i in range(len(nodes)-1)]
-        logging.info(f"Edges from ordered list of nodes: {edges}") 
+        result = [(nodes[i], nodes[i + 1]) for i in range(len(nodes) - 1)]
+        logging.info(f"Edges from ordered list of nodes: {result}")
 
-        return edges
+        return result
 
 
 if __name__ == "__main__":
@@ -146,7 +169,7 @@ if __name__ == "__main__":
         p = optparse.OptionParser()
         p.add_option('--graph', '-g', default="input/sample_graph.dot")
         p.add_option('--weights', '-w', default="input/sample_weights.csv")
-        p.add_option('--image-target', '-i')
+        p.add_option('--image-target', '-i')  # If this flag is omitted, no image file is saved
         options, arguments = p.parse_args()
 
         logging.info(f"\tOptions parsed: {options}")
@@ -155,12 +178,12 @@ if __name__ == "__main__":
         cp.load_graph(path=options.graph)
         cp.load_weights(path=options.weights)
         critical_path = cp.run()
-        if options.image_target: # , default="../target"
+        if options.image_target:
             cp.save_image(path=options.image_target)
         else:
             logging.info("Skipping image creation")
         import sys
         sys.stdout.write(str(critical_path))
         sys.exit(0)
-    
+
     main()
