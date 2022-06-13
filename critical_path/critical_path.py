@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# from cmath import e
 import typing
 import logging
 import networkx as nx
@@ -34,11 +35,34 @@ class CriticalPath():
     # If importing this into another python application, directly pass in the objects
     def __init__(self, node_weights_map=None, graph=None):
         logging.info("Creating CriticalPath object")
-        self.node_weights_map: typing.Dict[any, int] = node_weights_map
+        # The weight values are ints to simplify the calculations and validation.
+        # Be sure that the inputs and outputs are treated as the same units,
+        # for example as minutes or seconds depending on how granular of a result is needed
         self.graph: nx.DiGraph = graph
+        self.node_weights_map: typing.Dict[any, int] = node_weights_map
         self.critical_path_edges = None
         self.critical_path_length = None
 
+    @property
+    def edge_weights(self) -> typing.Dict[tuple, int]:
+        """
+        Assign the same weight to all edges of u.
+
+        The graph assumes task-on-node.
+        Therefore all edges that have the same predecessor node u also share the same weight.
+        """
+        for node in self.node_weights_map.keys():
+            if node not in self.graph.nodes:
+                raise Exception(
+                    f"Node {node} from self.node_weights_map does not exist in self.graph.nodes"
+                )
+        try:  
+            result = {(u, v): self.node_weights_map[u] for u, v in self.graph.edges}
+        except KeyError as e:
+            raise KeyError(f"The graph node {e} does not exist in self.node_weights_map")
+        logging.info(f"Edge weights: {result}")
+        return result
+        
     def load_graph(self, path):
         """
         Reads a dotviz .dot file representing a digraph.
@@ -62,15 +86,20 @@ class CriticalPath():
             csv_reader = reader(read_obj)
             node_weights = list(csv_reader)[1:]
             node_weights_map = {}
-            for node, weight in node_weights:
+            for i, (node, weight) in enumerate(node_weights):
                 if not node_weights_map.get(node):
                     node_weights_map[node] = int(weight)
+                else:
+                    raise Exception(
+                        "The node weights csv file requires unqiue node values.  "
+                        f"Node `{node}` is duplicated on row {i+1}: {node_weights[i]}"
+                    )
             logging.info(f"Node weight map from {path}: {node_weights_map}")
             self.node_weights_map = node_weights_map
 
     def validate(self) -> None:
         """
-        Input validations before running calcs in the run() method
+        Validate that required instance variables exist before running calcs
         """
         if not self.node_weights_map:
             raise Exception("Undefined instance variable: self.node_weights_map")
@@ -78,20 +107,27 @@ class CriticalPath():
         if not self.graph:
             raise Exception("Undefined instance variable: self.graph")
 
-        if list(self.graph.nodes).sort() != list(self.node_weights_map.keys()).sort():
-            raise Exception("The set of graph nodes and the node weight nodes must be the same")
-
     def run(self) -> typing.Dict[tuple, int]:
         """
         Calculate the critical path and return the list of critical path edges
         """
         self.validate()
-        edge_weights = self._get_edge_weights()
+        edge_weights = self.edge_weights
         nx.set_edge_attributes(self.graph, edge_weights, self.EDGE_WEIGHT_ATTRIBUTE_NAME)
+
         longest_path_nodes = nx.dag_longest_path(self.graph)
         self.critical_path_edges = self._get_edges_from_ordered_list_of_nodes(longest_path_nodes)
         self.critical_path_length = nx.dag_longest_path_length(self.graph)
         result = {(u, v): edge_weights[(u, v)] for u, v in self.critical_path_edges}
+        
+        # Validate that the sum of edge weights matches the value of self.critical_path_length
+        if sum(result.values()) != self.critical_path_length:
+            raise Exception(
+                "The sum of edge weights must be the same as the self.critical_path_length value"
+            )
+        logging.info(f"Critical path result: {result}")
+        logging.info(f"Critical path length: {self.critical_path_length}")
+
         return result
 
     def save_image(self, path: str) -> None:
@@ -106,9 +142,9 @@ class CriticalPath():
         self.validate()
         if not self.critical_path_edges:
             raise Exception(
-                "Undefined instance variable: self.critical_path_edges"
+                "Undefined instance variable: self.critical_path_edges."
                 "Must call self.run() to calculate the critical path, "
-                "before calling self.save_image()"
+                "before calling self.save_image()."
             )
 
         logging.info("Drawing graph")
@@ -117,14 +153,15 @@ class CriticalPath():
         pos = nx.planar_layout(self.graph)
         nx.draw_networkx_edge_labels(self.graph, pos=pos, edge_labels=edge_labels)
 
-        # Set the default color for all nodes
+        # Set a default color so that attribute keys exist for all edges
         for u, v in self.graph.edges():
             self.graph[u][v][self.EDGE_COLOR_ATTRIBUTE_NAME] = EDGE_COLOR_DEFAULT
-        # Set highlighted edge colors, for critical path highlighting
+        # Update the edge color highlighting the critical path edges
         for u, v in self.critical_path_edges:
             self.graph[u][v][self.EDGE_COLOR_ATTRIBUTE_NAME] = EDGE_COLOR_CRITICAL_PATH
-        # Assign all edge colors
+        # Fetch all edge colors and assign to the graph drawing
         edge_color_list = [self.graph[u][v][self.EDGE_COLOR_ATTRIBUTE_NAME] for u, v in self.graph.edges()]
+        logging.info(f"\tEdge color list: {edge_color_list} ")
         nx.draw_planar(self.graph, with_labels=True, edge_color=edge_color_list)
 
         filename_full = f"{path}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
@@ -132,17 +169,6 @@ class CriticalPath():
         plt.savefig(filename_full, format=FILE_EXTENSION)
         logging.info("\tDone saving image")
         plt.clf()
-
-    def _get_edge_weights(self) -> typing.Dict[tuple, int]:
-        """
-        Assign the same weight to all edges of u.
-
-        The graph assumes task-on-node.
-        Therefore all edges that have the same predecessor node u also share the same weight.
-        """
-        result = {(u, v): self.node_weights_map[u] for u, v in self.graph.edges}
-        logging.info(f"Edge weights: {result}")
-        return result
 
     @staticmethod
     def _get_edges_from_ordered_list_of_nodes(nodes: typing.List[any]) -> typing.List[tuple]:
