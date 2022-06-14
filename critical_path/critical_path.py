@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# from cmath import e
 import typing
 import logging
 import networkx as nx
@@ -21,12 +20,11 @@ logging.basicConfig(
 
 class CriticalPath():
     """
-    The predecessor node defines the weight for all edges between itself and any downstream successor nodes.
-    For example, if the duration of the node named `main` is 2 hours, the edges (main, parse), (main, cleanup),
+    Assumes task-on-node approach to CPM.  
+    Throughout this module, the variables `u`, `v` denote the predecessor and successor nodes of an edge.
+    The edge weight is the same value for all edges of which the task is the predecessor node.
+    For example, if the duration of the node (task) named `main` is 2 hours, the edges (main, parse), (main, cleanup),
     and all others like (main, *) have the same weight of 2.
-    To do this, need the list of nodes with their execution duration.
-    There must always be a `end` task with no weight value.
-    Every predecessor task must have at least one descendent, which will either be the `end` task or any other downstream task.
     """
     EDGE_WEIGHT_ATTRIBUTE_NAME = "weight"
     EDGE_COLOR_ATTRIBUTE_NAME = "color"
@@ -49,20 +47,20 @@ class CriticalPath():
         Assign the same weight to all edges of u.
 
         The graph assumes task-on-node.
-        Therefore all edges that have the same predecessor node u also share the same weight.
+        Therefore all edges that have the same predecessor node `u` also share the same weight.
         """
         for node in self.node_weights_map.keys():
             if node not in self.graph.nodes:
                 raise Exception(
                     f"Node {node} from self.node_weights_map does not exist in self.graph.nodes"
                 )
-        try:  
+        try:
             result = {(u, v): self.node_weights_map[u] for u, v in self.graph.edges}
         except KeyError as e:
             raise KeyError(f"The graph node {e} does not exist in self.node_weights_map")
         logging.info(f"Edge weights: {result}")
         return result
-        
+
     def load_graph(self, path):
         """
         Reads a dotviz .dot file representing a digraph.
@@ -91,8 +89,8 @@ class CriticalPath():
                     node_weights_map[node] = int(weight)
                 else:
                     raise Exception(
-                        "The node weights csv file requires unqiue node values.  "
-                        f"Node `{node}` is duplicated on row {i+1}: {node_weights[i]}"
+                        "The node weights csv file requires unique node values in column 1.  "
+                        f"Node value `{node}` is duplicated on row {i+1}: {node_weights[i]}"
                     )
             logging.info(f"Node weight map from {path}: {node_weights_map}")
             self.node_weights_map = node_weights_map
@@ -119,7 +117,7 @@ class CriticalPath():
         self.critical_path_edges = self._get_edges_from_ordered_list_of_nodes(longest_path_nodes)
         self.critical_path_length = nx.dag_longest_path_length(self.graph)
         result = {(u, v): edge_weights[(u, v)] for u, v in self.critical_path_edges}
-        
+
         # Validate that the sum of edge weights matches the value of self.critical_path_length
         if sum(result.values()) != self.critical_path_length:
             raise Exception(
