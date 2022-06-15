@@ -22,15 +22,8 @@
 * -i: path to where the graph image is saved in png format
 
 ## Outputs
-1. Return the critical path nodes the graph, using the execution time as the edge weights of the graph
+1. Return the critical path weighted edges as a dictionary of tuples, with the edge weights as values
 1. Save an image of the graph with the critical path highlighted
-
-# Backlog
-1. Layout the graph in left-to-right format, so that edge arrows are always directed towards the right
-1. Render the graph image and critical path edge list in a django app
-    1. With static inputs
-    1. With user-submitted inputs
-1. Store user-submitted input and results
 
 # Credits
 * Dot file example: https://www.graphviz.org/pdf/dotguide.pdf
