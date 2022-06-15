@@ -8,11 +8,9 @@ from uuid import uuid4
 from csv import reader
 import optparse
 
-
 logging.basicConfig(
-    filename='../target/logs/critical-path.log',
     encoding='utf-8',
-    level=logging.INFO,
+    level=logging.WARNING,
     format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
