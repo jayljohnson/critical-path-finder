@@ -6,5 +6,6 @@ WORKDIR /code
 COPY requirements.txt /code/
 RUN pip install -r requirements.txt
 COPY . /code/
-RUN mkdir -p target/logs/
+RUN useradd -ms /bin/bash system
+USER system
 ENTRYPOINT ["tail", "-f", "/dev/null"]

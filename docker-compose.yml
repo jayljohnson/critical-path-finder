@@ -5,9 +5,3 @@ services:
     build: .
     volumes:
       - .:/code
-    ports:
-      - "8000:8000"
-    environment:
-      - POSTGRES_NAME=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
