@@ -98,10 +98,10 @@ class CriticalPath():
         Validate that required instance variables exist before running calcs
         """
         if not self.node_weights_map:
-            raise Exception("Undefined instance variable: self.node_weights_map")
+            raise MissingInputsException("Undefined instance variable: self.node_weights_map")
 
         if not self.graph:
-            raise Exception("Undefined instance variable: self.graph")
+            raise MissingInputsException("Undefined instance variable: self.graph")
 
     def run(self) -> typing.Dict[tuple, int]:
         """
@@ -139,7 +139,7 @@ class CriticalPath():
 
         self.validate()
         if not self.critical_path_edges:
-            raise Exception(
+            raise RunBeforeSaveException(
                 "Undefined instance variable: self.critical_path_edges."
                 "Must call self.run() to calculate the critical path, "
                 "before calling self.save_image()."
@@ -211,3 +211,10 @@ if __name__ == "__main__":
         sys.exit(0)
 
     main()
+
+
+class MissingInputsException(Exception):
+    pass
+
+class RunBeforeSaveException(Exception):
+    pass
