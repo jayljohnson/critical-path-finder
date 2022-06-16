@@ -1,6 +1,11 @@
 import pytest
 from critical_path.critical_path import CriticalPath, MissingInputsException, RunBeforeSaveException
-import networkx as nx
+from networkx.exception import NetworkXUnfeasible
+from networkx import DiGraph
+
+
+def test__get_digraph_from_tuples():
+    assert type(CriticalPath._get_digraph_from_tuples([(1,2), (2,3)])) == DiGraph
 
 @pytest.fixture
 def node_weights_map():
@@ -8,7 +13,7 @@ def node_weights_map():
 
 @pytest.fixture
 def graph():
-    return nx.DiGraph([(1,2), (2,3)])
+    return CriticalPath._get_digraph_from_tuples([(1,2), (2,3)])
 
 @pytest.fixture
 def node_weights_map_complex():
@@ -16,21 +21,34 @@ def node_weights_map_complex():
 
 @pytest.fixture
 def graph_complex():
-    return nx.DiGraph([(1,2), (2,3), (3,4), (4,5), (1,5)])   
+    return CriticalPath._get_digraph_from_tuples([(1,2), (2,3), (3,4), (4,5), (1,5)]) 
+
+@pytest.fixture
+def graph_cycle():
+    return CriticalPath._get_digraph_from_tuples([(1,2), (2,3), (3,4), (4,5), (5,1)])       
 
 
-def test_critical_path_simple(node_weights_map, graph, node_weights_map_complex, graph_complex):
-    assert CriticalPath(node_weights_map=node_weights_map, graph=graph).validate() == None
-    assert CriticalPath(node_weights_map=node_weights_map, graph=graph).run() == {(1,2): 1, (2,3): 2}
-    assert CriticalPath(node_weights_map=node_weights_map_complex, graph=graph_complex).validate() == None
-    assert CriticalPath(node_weights_map=node_weights_map_complex, graph=graph_complex).run() == {(1,2): 1, (2,3): 2, (3, 4): 3, (4, 5): 4}
+def test_critical_path(node_weights_map, graph, node_weights_map_complex, graph_complex, graph_cycle):
+    cp_simple = CriticalPath(node_weights_map=node_weights_map, graph=graph)
+    assert cp_simple.run() == {(1,2): 1, (2,3): 2}
+    assert cp_simple.validate() == None
+    
+    cp_complex = CriticalPath(node_weights_map=node_weights_map_complex, graph=graph_complex)
+    assert cp_complex.validate() == None
+    assert cp_complex.run() == {(1,2): 1, (2,3): 2, (3, 4): 3, (4, 5): 4}
 
-def test_critical_path_complex():
-    pass
+    with pytest.raises(MissingInputsException):
+        CriticalPath().validate()
 
-
-def test_critical_path_with_cycle():
-    pass
+    with pytest.raises(MissingInputsException):
+        CriticalPath().run()
+    
+def test_critical_path_with_cycle(node_weights_map_complex, graph_cycle):
+    cp_cycle =  CriticalPath(node_weights_map=node_weights_map_complex, graph=graph_cycle)
+    assert cp_cycle.validate() == None
+    
+    with pytest.raises(NetworkXUnfeasible):
+        cp_cycle.run()
 
 
 def test_edge_weights():
@@ -44,20 +62,6 @@ def test_load_graph():
 def test_load_weights():
     pass
 
-
-def test_validate(node_weights_map, graph):
-    assert CriticalPath(node_weights_map=node_weights_map, graph=graph).validate() == None
-
-    with pytest.raises(MissingInputsException):
-        CriticalPath().validate()
-
-
-def test_run(node_weights_map, graph):
-    cp = CriticalPath(node_weights_map=node_weights_map, graph=graph)
-    assert cp.run() == {(1,2):1, (2,3):2}
-
-    with pytest.raises(MissingInputsException):
-        CriticalPath().run()   
 
 @pytest.mark.skip(reason="Needs handling for image write to filesystem")
 def test_save_image(node_weights_map, graph, tmpdir):

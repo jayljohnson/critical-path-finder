@@ -34,6 +34,7 @@ class CriticalPath():
         # The weight values are ints to simplify the calculations and validation.
         # Be sure that the inputs and outputs are treated as the same units,
         # for example as minutes or seconds depending on how granular of a result is needed
+        # TODO: Accept an option for nx.DiGraph or a list of tuples?
         self.graph: nx.DiGraph = graph
         self.node_weights_map: typing.Dict[any, int] = node_weights_map
         self.critical_path_edges = None
@@ -59,7 +60,8 @@ class CriticalPath():
         logging.debug(f"Edge weights: {result}")
         return result
 
-    def load_graph(self, path):
+
+    def load_graph_from_dot_file(self, path):
         """
         Reads a dotviz .dot file representing a digraph.
         Used by CLI -g flag to pass in a file path.
@@ -71,6 +73,7 @@ class CriticalPath():
         logging.debug(f"\tNodes: {G.nodes}")
         logging.debug(f"\tEdges: {G.edges}")
         self.graph = G
+
 
     def load_weights(self, path) -> None:
         """
@@ -93,6 +96,7 @@ class CriticalPath():
             logging.debug(f"Node weight map from {path}: {node_weights_map}")
             self.node_weights_map = node_weights_map
 
+    
     def validate(self) -> None:
         """
         Validate that required instance variables exist before running calcs
@@ -178,6 +182,18 @@ class CriticalPath():
         logging.debug(f"Edges from ordered list of nodes: {result}")
 
         return result
+    
+    @staticmethod
+    def _get_digraph_from_tuples(graph: typing.List[tuple]):
+        """
+        Reads a list of tuples representing a digraph.
+        """
+        logging.info("Loading graph from list of tuples")
+        G = nx.DiGraph(graph)
+        logging.debug(f"\tGraph loaded: {G}")
+        logging.debug(f"\tNodes: {G.nodes}")
+        logging.debug(f"\tEdges: {G.edges}")
+        return G
 
 
 if __name__ == "__main__":
@@ -199,7 +215,7 @@ if __name__ == "__main__":
         logging.debug(f"\tOptions parsed: {options}")
         logging.debug(f"\tArguments parsed: {arguments}")
         cp = CriticalPath()
-        cp.load_graph(path=options.graph)
+        cp.load_graph_from_dot_file(path=options.graph)
         cp.load_weights(path=options.weights)
         critical_path = cp.run()
         if options.image_target:
@@ -216,5 +232,9 @@ if __name__ == "__main__":
 class MissingInputsException(Exception):
     pass
 
+
 class RunBeforeSaveException(Exception):
+    pass
+
+class ClearBeforeLoading(Exception):
     pass
