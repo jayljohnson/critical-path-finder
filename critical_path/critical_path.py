@@ -48,6 +48,7 @@ class CriticalPath():
         The graph assumes task-on-node.
         Therefore all edges that have the same predecessor node `u` also share the same weight.
         """
+        self.validate()
         for node in self.node_weights_map.keys():
             if node not in self.graph.nodes:
                 raise Exception(
@@ -96,7 +97,6 @@ class CriticalPath():
             logging.debug(f"Node weight map from {path}: {node_weights_map}")
             self.node_weights_map = node_weights_map
 
-    
     def validate(self) -> None:
         """
         Validate that required instance variables exist before running calcs

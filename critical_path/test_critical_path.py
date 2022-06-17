@@ -16,6 +16,10 @@ def graph():
     return CriticalPath._get_digraph_from_tuples([(1,2), (2,3)])
 
 @pytest.fixture
+def graph_cycle():
+    return CriticalPath._get_digraph_from_tuples([(1,2), (2,3), (3,1)])       
+
+@pytest.fixture
 def node_weights_map_complex():
     return {1:1, 2:2, 3:3, 4:4, 5:5}
 
@@ -23,12 +27,9 @@ def node_weights_map_complex():
 def graph_complex():
     return CriticalPath._get_digraph_from_tuples([(1,2), (2,3), (3,4), (4,5), (1,5)]) 
 
-@pytest.fixture
-def graph_cycle():
-    return CriticalPath._get_digraph_from_tuples([(1,2), (2,3), (3,4), (4,5), (5,1)])       
 
 
-def test_critical_path(node_weights_map, graph, node_weights_map_complex, graph_complex, graph_cycle):
+def test_critical_path(node_weights_map, graph, node_weights_map_complex, graph_complex):
     cp_simple = CriticalPath(node_weights_map=node_weights_map, graph=graph)
     assert cp_simple.run() == {(1,2): 1, (2,3): 2}
     assert cp_simple.validate() == None
@@ -43,22 +44,32 @@ def test_critical_path(node_weights_map, graph, node_weights_map_complex, graph_
     with pytest.raises(MissingInputsException):
         CriticalPath().run()
     
-def test_critical_path_with_cycle(node_weights_map_complex, graph_cycle):
-    cp_cycle =  CriticalPath(node_weights_map=node_weights_map_complex, graph=graph_cycle)
+def test_critical_path_with_cycle(node_weights_map, graph_cycle):
+    cp_cycle =  CriticalPath(node_weights_map=node_weights_map, graph=graph_cycle)
     assert cp_cycle.validate() == None
     
     with pytest.raises(NetworkXUnfeasible):
         cp_cycle.run()
 
 
-def test_edge_weights():
-    pass
+def test_edge_weights(node_weights_map, graph):
+    cp_complex = CriticalPath(node_weights_map=node_weights_map, graph=graph)
+    assert cp_complex.edge_weights == {(1, 2): 1, (2, 3): 2}
 
 
+def test_get_edges_from_ordered_list_of_nodes():
+    nodes = [1, 2, 3]
+    expected = [(1,2), (2,3)]
+    result = CriticalPath._get_edges_from_ordered_list_of_nodes(nodes=nodes)
+    assert expected == result
+
+
+@pytest.mark.skip(reason="Needs handling to read from filesystem")
 def test_load_graph():
     pass
 
 
+@pytest.mark.skip(reason="Needs handling to read from filesystem")
 def test_load_weights():
     pass
 
@@ -77,6 +88,3 @@ def test_save_image(node_weights_map, graph, tmpdir):
     cp = CriticalPath(node_weights_map=node_weights_map, graph=graph)
     cp.run()
     assert cp.save_image(path=path.strpath) == None
-
-def test_get_edges_from_ordered_list_of_nodes():
-    pass
