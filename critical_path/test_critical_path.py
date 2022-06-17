@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+ 
 import pytest
-from critical_path.critical_path import CriticalPath, MissingInputsException, RunBeforeSaveException
+from .critical_path import CriticalPath
+from exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
 from networkx.exception import NetworkXUnfeasible
 from networkx import DiGraph
 
@@ -71,6 +74,11 @@ def test_load_graph():
 
 @pytest.mark.skip(reason="Needs handling to read from filesystem")
 def test_load_weights():
+    # TODO: Positive test
+
+    # TODO: Negative test
+    with pytest.raises(NodeWeightsDuplicateValues):
+        pass
     pass
 
 

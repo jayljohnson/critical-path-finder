@@ -8,6 +8,8 @@ from uuid import uuid4
 from csv import reader
 import click
 
+from exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
+
 logging.basicConfig(
     encoding='utf-8',
     level=logging.WARNING,
@@ -18,26 +20,29 @@ logging.basicConfig(
 
 class CriticalPath():
     """
-    Task-on-node approach to CPM.  
-    Throughout this module, the variables `u`, `v` denote the predecessor and successor nodes of an edge.
-    The edge weight is the same value for all edges of which the task is the predecessor node.
-    For example, if the duration of the node (task) named `main` is 2 hours, the edges (main, parse), (main, cleanup),
+    Implements task-on-node approach to Critical Path Management (CPM).  Returns the longest path based on the node duration, cost, or other quantifiable attribute.
+    * To implement task-on-node, the edge weight is the same value for all edges of which the task is the predecessor node.
+    * For example, if the duration of the node (task) named `main` is 2 hours, the edges (main, parse), (main, cleanup),
     and all others like (main, *) have the same weight of 2.
+    
+    For more info on CPM see https://en.wikipedia.org/wiki/Critical_path_method.  
+    
+    The variables `u`, `v` represent the predecessor (parent) and successor (child) nodes of an edge.  This naming convention is borrowed from the networkx package.
     """
     EDGE_WEIGHT_ATTRIBUTE_NAME = "weight"
     EDGE_COLOR_ATTRIBUTE_NAME = "color"
 
-    # None is the default intentionally to support loading from files from the CLI.
-    # If importing this into another python application, directly pass in the objects
-    def __init__(self, node_weights_map=None, graph=None):
+    def __init__(self, graph=None, node_weights_map=None):
         logging.info("Creating CriticalPath object")
         # The weight values are ints to simplify the calculations and validation.
-        # Be sure that the inputs and outputs are treated as the same units,
-        # for example as minutes or seconds depending on how granular of a result is needed
-        # TODO: Accept an option for nx.DiGraph or a list of tuples?
+        # Take care that the inputs and outputs are treated as the same units,
+        # for example as hours, minutes or seconds.  Unit conversion and fractional units are not supported within the module.
+        # Inputs
         self.graph: nx.DiGraph = graph
         self.node_weights_map: typing.Dict[any, int] = node_weights_map
+        # Output
         self.critical_path_edges = None
+        # Used mostly for validation; persisted for quick access to the sum of the critical path edge weights
         self.critical_path_length = None
 
     @property
@@ -65,11 +70,12 @@ class CriticalPath():
     def load_graph_from_dot_file(self, path):
         """
         Reads a dotviz .dot file representing a digraph.
-        Used by CLI -g flag to pass in a file path.
         """
         logging.info("Loading graph from dot file")
         G = nx.DiGraph(nx.nx_pydot.read_dot(path))
+        # Cleanup newlines in the .dot file that get loaded as nodes
         G.remove_node("\\n")
+    
         logging.debug(f"\tGraph loaded: {G}")
         logging.debug(f"\tNodes: {G.nodes}")
         logging.debug(f"\tEdges: {G.edges}")
@@ -78,9 +84,8 @@ class CriticalPath():
 
     def load_weights(self, path) -> None:
         """
-        Load weights from a csv file containing the node and the node property,
-         to be assigned to all edge weights where that node is the predecessor
-        Used by CLI -w flag to pass in a file path.
+        Load weights from a csv file containing the node and the node weight.  
+        The node weight is later assigned to all edge weights where the node is the predecessor.
         """
         with open(path, 'r') as read_obj:
             csv_reader = reader(read_obj)
@@ -90,7 +95,7 @@ class CriticalPath():
                 if not node_weights_map.get(node):
                     node_weights_map[node] = int(weight)
                 else:
-                    raise Exception(
+                    raise NodeWeightsDuplicateValues(
                         "The node weights csv file requires unique node values in column 1.  "
                         f"Node value `{node}` is duplicated on row {i+1}: {node_weights[i]}"
                     )
@@ -134,7 +139,7 @@ class CriticalPath():
 
     def save_image(self, path: str) -> None:
         """
-        Generate an image of the graph with the critical path highlighted
+        Generate an image of the graph with the critical path highlighted in a different color than other edges
         """
         EDGE_COLOR_DEFAULT = "blue"
         EDGE_COLOR_CRITICAL_PATH = "red"
@@ -199,9 +204,9 @@ class CriticalPath():
 if __name__ == "__main__":
 
     @click.command()
-    @click.option('--graph', default="input/sample_graph.dot", help="File location for DiGraph .dot file")
-    @click.option('--weights', default="input/sample_weights.csv", help="File location for edge weights")
-    @click.option('--image-target', help="File location to write the graph as a .png file")
+    @click.option('-g', '--graph', default="input/sample_graph.dot", help="File location for DiGraph .dot file")
+    @click.option('-w', '--weights', default="input/sample_weights.csv", help="File location for edge weights")
+    @click.option('-i', '--image-target', help="File location to write the graph as a .png file")
     def main(graph, weights, image_target):
         """
         Used by the CLI.
@@ -222,15 +227,3 @@ if __name__ == "__main__":
         sys.exit(0)
 
     main()
-
-
-class MissingInputsException(Exception):
-    pass
-
-
-class RunBeforeSaveException(Exception):
-    pass
-
-
-class ClearBeforeLoading(Exception):
-    pass
