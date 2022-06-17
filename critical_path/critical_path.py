@@ -6,7 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt  # type: ignore
 from uuid import uuid4
 from csv import reader
-import optparse
+import click
 
 logging.basicConfig(
     encoding='utf-8',
@@ -198,28 +198,23 @@ class CriticalPath():
 
 if __name__ == "__main__":
 
-    def main():
+    @click.command()
+    @click.option('--graph', default="input/sample_graph.dot", help="File location for DiGraph .dot file")
+    @click.option('--weights', default="input/sample_weights.csv", help="File location for edge weights")
+    @click.option('--image-target', help="File location to write the graph as a .png file")
+    def main(graph, weights, image_target):
         """
         Used by the CLI.
         Calculate the critical path and save an image of the graph.
         Requires the graph and weights to be stored as a file before running.
         """
         logging.info("*** Calculating the critical path ***")
-        logging.debug("Parsing command line options.")
-        p = optparse.OptionParser()
-        p.add_option('--graph', '-g', default="input/sample_graph.dot")
-        p.add_option('--weights', '-w', default="input/sample_weights.csv")
-        p.add_option('--image-target', '-i')  # If this flag is omitted, no image file is saved
-        options, arguments = p.parse_args()
-
-        logging.debug(f"\tOptions parsed: {options}")
-        logging.debug(f"\tArguments parsed: {arguments}")
         cp = CriticalPath()
-        cp.load_graph_from_dot_file(path=options.graph)
-        cp.load_weights(path=options.weights)
+        cp.load_graph_from_dot_file(path=graph)
+        cp.load_weights(path=weights)
         critical_path = cp.run()
-        if options.image_target:
-            cp.save_image(path=options.image_target)
+        if image_target:
+            cp.save_image(path=image_target)
         else:
             logging.debug("Skipping image creation.  To save an image, run with the -i flag set to the image target directory.")
         import sys
@@ -235,6 +230,7 @@ class MissingInputsException(Exception):
 
 class RunBeforeSaveException(Exception):
     pass
+
 
 class ClearBeforeLoading(Exception):
     pass
