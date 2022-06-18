@@ -32,14 +32,14 @@ class CriticalPath():
     EDGE_WEIGHT_ATTRIBUTE_NAME = "weight"
     EDGE_COLOR_ATTRIBUTE_NAME = "color"
 
-    def __init__(self, graph=None, node_weights_map=None):
+    def __init__(self, graph: nx.DiGraph=None, node_weights_map:typing.Dict[any, int]=None):
         logging.info("Creating CriticalPath object")
         # The weight values are ints to simplify the calculations and validation.
         # Take care that the inputs and outputs are treated as the same units,
         # for example as hours, minutes or seconds.  Unit conversion and fractional units are not supported within the module.
         # Inputs
-        self.graph: nx.DiGraph = graph
-        self.node_weights_map: typing.Dict[any, int] = node_weights_map
+        self.graph = graph
+        self.node_weights_map = node_weights_map
         # Output
         self.critical_path_edges = None
         # Used mostly for validation; persisted for quick access to the sum of the critical path edge weights
