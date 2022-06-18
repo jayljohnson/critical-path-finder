@@ -26,12 +26,12 @@ Important! The node weights must be int's.  Handle any unit conversions outside 
 ## Features
 
 1. Read a graph of tasks from one of three sources:
-  1.1. Graphviz digraph file (.dot) by calling `CriticalPath().load_graph_from_dot_file()`
-  1.1. Networkx DiGraph by passing it into the `graph` variable during CriticalPath() instance creation
-  1.1. Python List of tuples representing graph edges by converting it to a NetworkxDigraph by calling static method `CriticalPath()._get_digraph_from_tuples()`, then passing it into the `graph` variable during `CriticalPath()` instance creation.
+    1.1. Graphviz digraph file (.dot) by calling `CriticalPath().load_graph_from_dot_file()`
+    1.1. Networkx DiGraph by passing it into the `graph` variable during CriticalPath() instance creation
+    1.1. Python List of tuples representing graph edges by converting it to a NetworkxDigraph by calling static method `CriticalPath()._get_digraph_from_tuples()`, then passing it into the `graph` variable during `CriticalPath()` instance creation.
 1. Read the weighting of each graph node from one of two sources:
-  1.1. csv file with two columns, the node and the weight
-  1.1. Python dictionary
+    1.1. csv file with two columns, the node and the weight
+    1.1. Python dictionary
 1. Return the critical path weighted edges as a dictionary of tuples, with the edge weights as the values
 ![Example CLI output showing the critical path as weighted edges](/critical_path_finder/sample/CLI-output-sample.png?raw=true "Sample Critical Path Dictionary")
 1. Save an image of the graph with the critical path highlighted
