@@ -1,0 +1,4 @@
+.vscode/
+.pytest_cache/
+target/*.log
+target/*.png

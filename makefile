@@ -1,5 +1,8 @@
 ps:
-		docker ps
+	docker ps
 
 cli:
-		docker exec -it f086c070d28a  /bin/bash
+	docker exec -it f086c070d28a  /bin/bash
+
+test:
+	python -m pytest
