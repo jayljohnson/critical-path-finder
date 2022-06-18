@@ -76,9 +76,11 @@ class CriticalPath():
         # Cleanup newlines in the .dot file that get loaded as nodes
         G.remove_node("\\n")
     
-        logging.debug(f"\tGraph loaded: {G}")
-        logging.debug(f"\tNodes: {G.nodes}")
-        logging.debug(f"\tEdges: {G.edges}")
+        logging.debug(
+            f"\tGraph loaded: {G}"
+            f"\tNodes: {G.nodes}"
+            f"\tEdges: {G.edges}"
+            )
         self.graph = G
 
 
@@ -125,8 +127,10 @@ class CriticalPath():
         self.critical_path_length = nx.dag_longest_path_length(self.graph)
         result = {(u, v): edge_weights[(u, v)] for u, v in self.critical_path_edges}
 
-        logging.info(f"Critical path result: {result}")
-        logging.info(f"Critical path length: {self.critical_path_length}")
+        logging.info(
+            f"Critical path result: {result}"
+            f"Critical path length: {self.critical_path_length}"
+            )
         
         # Validate that the sum of edge weights matches the value of self.critical_path_length
         edge_weights_sum = sum(result.values())
@@ -195,9 +199,11 @@ class CriticalPath():
         """
         logging.info("Loading graph from list of tuples")
         G = nx.DiGraph(graph)
-        logging.debug(f"\tGraph loaded: {G}")
-        logging.debug(f"\tNodes: {G.nodes}")
-        logging.debug(f"\tEdges: {G.edges}")
+        logging.debug(
+            f"\tGraph loaded: {G}"
+            f"\tNodes: {G.nodes}"
+            "\tEdges: {G.edges}"
+            )
         return G
 
 
