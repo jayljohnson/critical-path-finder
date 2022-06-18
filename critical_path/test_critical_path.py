@@ -34,25 +34,25 @@ def graph_complex():
 
 def test_critical_path(node_weights_map, graph, node_weights_map_complex, graph_complex):
     cp_simple = CriticalPath(node_weights_map=node_weights_map, graph=graph)
-    assert cp_simple.run() == {(1,2): 1, (2,3): 2}
+    assert cp_simple.find() == {(1,2): 1, (2,3): 2}
     assert cp_simple.validate() == None
     
     cp_complex = CriticalPath(node_weights_map=node_weights_map_complex, graph=graph_complex)
     assert cp_complex.validate() == None
-    assert cp_complex.run() == {(1,2): 1, (2,3): 2, (3, 4): 3, (4, 5): 4}
+    assert cp_complex.find() == {(1,2): 1, (2,3): 2, (3, 4): 3, (4, 5): 4}
 
     with pytest.raises(MissingInputsException):
         CriticalPath().validate()
 
     with pytest.raises(MissingInputsException):
-        CriticalPath().run()
+        CriticalPath().find()
     
 def test_critical_path_with_cycle(node_weights_map, graph_cycle):
     cp_cycle =  CriticalPath(node_weights_map=node_weights_map, graph=graph_cycle)
     assert cp_cycle.validate() == None
     
     with pytest.raises(NetworkXUnfeasible):
-        cp_cycle.run()
+        cp_cycle.find()
 
 
 def test_edge_weights(node_weights_map, graph):
@@ -94,5 +94,5 @@ def test_save_image(node_weights_map, graph, tmpdir):
         CriticalPath(node_weights_map=node_weights_map, graph=graph).save_image(path=path.strpath)
 
     cp = CriticalPath(node_weights_map=node_weights_map, graph=graph)
-    cp.run()
+    cp.find()
     assert cp.save_image(path=path.strpath) == None

@@ -23,9 +23,7 @@ class CriticalPath():
     Implements task-on-node approach to Critical Path Management (CPM).  Returns the longest path based on the node duration, cost, or other quantifiable attribute.
     * To implement task-on-node, the edge weight is the same value for all edges of which the task is the predecessor node.
     * For example, if the duration of the node (task) named `main` is 2 hours, the edges (main, parse), (main, cleanup),
-    and all others like (main, *) have the same weight of 2.
-    
-    For more info on CPM see https://en.wikipedia.org/wiki/Critical_path_method.  
+    and all others like (main, *) have the same weight of 2.  
     
     The variables `u`, `v` represent the predecessor (parent) and successor (child) nodes of an edge.  This naming convention is borrowed from the networkx package.
     """
@@ -69,7 +67,7 @@ class CriticalPath():
 
     def load_graph_from_dot_file(self, path):
         """
-        Reads a dotviz .dot file representing a digraph.
+        Reads a graphviz .dot file representing a digraph.
         """
         logging.info("Loading graph from dot file")
         G = nx.DiGraph(nx.nx_pydot.read_dot(path))
@@ -114,7 +112,7 @@ class CriticalPath():
         if not self.graph:
             raise MissingInputsException("Undefined instance variable: self.graph")
 
-    def run(self) -> typing.Dict[tuple, int]:
+    def find(self) -> typing.Dict[tuple, int]:
         """
         Calculate the critical path and return the list of critical path edges
         """
@@ -154,7 +152,7 @@ class CriticalPath():
         if not self.critical_path_edges:
             raise RunBeforeSaveException(
                 "Undefined instance variable: self.critical_path_edges."
-                "Must call self.run() to calculate the critical path, "
+                "Must call self.find() to calculate the critical path, "
                 "before calling self.save_image()."
             )
 
@@ -223,7 +221,7 @@ if __name__ == "__main__":
         cp = CriticalPath()
         cp.load_graph_from_dot_file(path=graph)
         cp.load_weights(path=weights)
-        critical_path = cp.run()
+        critical_path = cp.find()
         if image_target:
             cp.save_image(path=image_target)
         else:
