@@ -33,9 +33,9 @@ Important! The node weights must be int's.  Handle any unit conversions outside 
   1.1. csv file with two columns, the node and the weight
   1.1. Python dictionary
 1. Return the critical path weighted edges as a dictionary of tuples, with the edge weights as the values
-![Example CLI output showing the critical path as weighted edges](/sample/CLI-output-sample.png?raw=true "Sample Critical Path Dictionary")
+![Example CLI output showing the critical path as weighted edges](/critical_path_finder/sample/CLI-output-sample.png?raw=true "Sample Critical Path Dictionary")
 1. Save an image of the graph with the critical path highlighted
-![Example graph with the critical path highlighted](/sample/CriticalPathGraph-sample.png?raw=true "Sample Critical Path Image")
+![Example graph with the critical path highlighted](/critical_path_finder/sample/CriticalPathGraph-sample.png?raw=true "Sample Critical Path Image")
 
 ## Design Assumptions
 
