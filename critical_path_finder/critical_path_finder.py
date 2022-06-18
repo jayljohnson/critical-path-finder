@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt  # type: ignore
 from uuid import uuid4
 from csv import reader
 import click
+import json
 
 from exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
 

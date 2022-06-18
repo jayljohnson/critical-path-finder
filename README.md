@@ -9,9 +9,9 @@ Used for understanding and optimizing any physical or virtual systems.
 ## Quick Start
 
 1. Run from the CLI by:
-   1. Using the provided sample inputs with `python critical_path.py`
+   1. Using the provided sample inputs with `python critical_path_finder.py`
    2. Or, pass in in paths to your own input and output locations using
-`python critical_path.py -g input/sample_graph.dot -w input/sample_weights.csv -i ../target`
+`python critical_path_finder.py -g input/sample_graph.dot -w input/sample_weights.csv -i ../target`
 1. Import into another module and pass the graph and node weights inputs into a new CriticalPath object.  See main() for examples.
 
 Important! The node weights must be int's.  Handle any unit conversions outside of this module.  For example if your weights are measured in fractional hours like 2.25 and you want to keep the values precise, convert them to minutes (2.25 * 60), or seconds (2.25 * 60 * 60).  Then the output units will be based on the input units.
@@ -33,7 +33,9 @@ Important! The node weights must be int's.  Handle any unit conversions outside 
   1.1. csv file with two columns, the node and the weight
   1.1. Python dictionary
 1. Return the critical path weighted edges as a dictionary of tuples, with the edge weights as the values
+![Example CLI output showing the critical path as weighted edges](/sample/CLI-output-sample.png?raw=true "Sample Critical Path Dictionary")
 1. Save an image of the graph with the critical path highlighted
+![Example graph with the critical path highlighted](/sample/CriticalPathGraph-sample.png?raw=true "Sample Critical Path Image")
 
 ## Design Assumptions
 
