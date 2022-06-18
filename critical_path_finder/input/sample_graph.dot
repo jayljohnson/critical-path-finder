@@ -1,0 +1,17 @@
+digraph G { 
+  main -> parse -> execute;
+  main -> init;
+  main -> cleanup;
+  execute -> make_string;
+  execute -> printf
+  init -> make_string;
+  main -> printf;
+  execute -> compare;
+  printf -> extra1;
+  extra1 -> extra2;
+  extra2 -> extra3;
+  extra3 -> end;
+  make_string -> end;
+  cleanup -> end;
+  compare -> end;
+  }
