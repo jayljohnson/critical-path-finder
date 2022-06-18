@@ -41,7 +41,7 @@ Important! The node weights must be int's.  Handle any unit conversions outside 
 Save the .dot file to a file, then reference the file path with the Critical Path Finder CLI using the `-g` flag.
 
 ### Airflow
-[`airflow dags show <DAG_ID> –save /input/sample_graph.dot`](https://airflow.apache.org/docs/apache-airflow/stable/cli-and-env-variables-ref.html#show){:target="_blank"}
+`airflow dags show <DAG_ID> –save /input/sample_graph.dot` [Airflow Docs](https://airflow.apache.org/docs/apache-airflow/stable/cli-and-env-variables-ref.html#show{:target="_blank"})
 
 ## Design Assumptions
 
