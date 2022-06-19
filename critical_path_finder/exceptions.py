@@ -8,9 +8,5 @@ class RunBeforeSaveException(Exception):
     pass
 
 
-class ClearBeforeLoading(Exception):
-    pass
-
-
 class NodeWeightsDuplicateValues(Exception):
     pass

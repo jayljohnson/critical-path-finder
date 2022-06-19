@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt  # type: ignore
 from uuid import uuid4
 from csv import reader
 import click
-import json
 
 from exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
 
@@ -66,7 +65,7 @@ class CriticalPath():
         return result
 
 
-    def load_graph_from_dot_file(self, path):
+    def load_graph_from_dot_file(self, path: str) -> None:
         """
         Reads a graphviz .dot file representing a digraph.
         """
@@ -83,7 +82,7 @@ class CriticalPath():
         self.graph = G
 
 
-    def load_weights(self, path) -> None:
+    def load_weights(self, path: str) -> None:
         """
         Load weights from a csv file containing the node and the node weight.  
         The node weight is later assigned to all edge weights where the node is the predecessor.
@@ -192,7 +191,7 @@ class CriticalPath():
         return result
     
     @staticmethod
-    def _get_digraph_from_tuples(graph: typing.List[tuple]):
+    def _get_digraph_from_tuples(graph: typing.List[tuple]) -> nx.DiGraph:
         """
         Reads a list of tuples representing a digraph.
         """
@@ -212,7 +211,7 @@ if __name__ == "__main__":
     @click.option('-g', '--graph', default="input/sample_graph.dot", help="File location for DiGraph .dot file")
     @click.option('-w', '--weights', default="input/sample_weights.csv", help="File location for edge weights")
     @click.option('-i', '--image-target', help="File location to write the graph as a .png file")
-    def main(graph, weights, image_target):
+    def main(graph, weights, image_target) -> None:
         """
         Used by the CLI.
         Calculate the critical path and save an image of the graph.
