@@ -92,7 +92,7 @@ setup(
     extras_require=EXTRAS,
     include_package_data=True,
     license='APACHE 2',
-    license_files=(['LICENSE'])
+    license_files=['LICENSE'],
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
