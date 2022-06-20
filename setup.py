@@ -13,7 +13,7 @@ from setuptools import find_packages, setup, Command
 
 NAME = 'critical-path-finder'
 DESCRIPTION = 'Calculate the critical (longest) path within a network of task dependencies.'
-URL = 'https://github.com/me/myproject'
+URL = 'https://github.com/jayljohnson/critical-path-finder'
 EMAIL = 'jljohn00+github@gmail.com'
 AUTHOR = 'Jay L. Johnson'
 REQUIRES_PYTHON = '>=3.6.0'
@@ -74,8 +74,6 @@ class UploadCommand(Command):
 
         sys.exit()
 
-
-# Where the magic happens:
 setup(
     name=NAME,
     version=about['__version__'],
