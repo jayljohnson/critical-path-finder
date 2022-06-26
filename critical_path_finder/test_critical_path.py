@@ -2,7 +2,7 @@
  
 import pytest
 from .critical_path_finder import CriticalPath
-from exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
+from .exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
 from networkx.exception import NetworkXUnfeasible
 from networkx import DiGraph
 

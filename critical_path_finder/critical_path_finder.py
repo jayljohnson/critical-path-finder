@@ -8,7 +8,7 @@ from uuid import uuid4
 from csv import reader
 import click
 
-from exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
+from .exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
 
 logging.basicConfig(
     encoding='utf-8',
@@ -42,6 +42,8 @@ class CriticalPath():
         self.critical_path_edges = None
         # Used mostly for validation; persisted for quick access to the sum of the critical path edge weights
         self.critical_path_length = None
+        # Location of the graph's image file
+        self.image_file_path = None
 
     @property
     def edge_weights(self) -> typing.Dict[tuple, int]:
@@ -173,9 +175,9 @@ class CriticalPath():
         logging.debug(f"\tEdge color list: {edge_color_list} ")
         nx.draw_planar(self.graph, with_labels=True, edge_color=edge_color_list)
 
-        filename_full = f"{path}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
-        logging.info(f"\tSaving image to: {filename_full} ")
-        plt.savefig(filename_full, format=FILE_EXTENSION)
+        self.image_file_path = f"{path}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
+        logging.info(f"\tSaving image to: {self.image_file_path} ")
+        plt.savefig(self.image_file_path, format=FILE_EXTENSION)
         logging.debug("\tDone saving image")
         plt.clf()
 
