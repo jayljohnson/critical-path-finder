@@ -10,8 +10,6 @@ import click
 
 import exceptions
 
-# NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
-
 logging.basicConfig(
     encoding='utf-8',
     level=logging.DEBUG,

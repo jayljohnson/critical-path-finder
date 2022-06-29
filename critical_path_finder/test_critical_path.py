@@ -3,6 +3,7 @@
 import pytest
 from .critical_path_finder import CriticalPath
 import exceptions
+
 from networkx.exception import NetworkXUnfeasible
 from networkx import DiGraph
 
