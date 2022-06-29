@@ -11,7 +11,7 @@ import click
 
 logging.basicConfig(
     encoding='utf-8',
-    level=logging.WARNING,
+    level=logging.DEBUG,
     format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )

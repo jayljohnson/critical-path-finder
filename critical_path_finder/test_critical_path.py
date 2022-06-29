@@ -1,5 +1,5 @@
 #!/usr/bin/env python
- 
+
 import pytest
 from .critical_path_finder import CriticalPath, RunBeforeSaveException, MissingInputsException, NodeWeightsDuplicateValues
 from networkx.exception import NetworkXUnfeasible
