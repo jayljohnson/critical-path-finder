@@ -141,7 +141,7 @@ class CriticalPath():
 
         return result
 
-    def save_image(self, path: str) -> None:
+    def save_image(self, path: str) -> str:
         """
         Generate an image of the graph with the critical path highlighted in a different color than other edges
         """
@@ -180,6 +180,7 @@ class CriticalPath():
         plt.savefig(self.image_file_path, format=FILE_EXTENSION)
         logging.debug("\tDone saving image")
         plt.clf()
+        return self.image_file_path
 
     @staticmethod
     def _get_edges_from_ordered_list_of_nodes(nodes: typing.List[any]) -> typing.List[tuple]:
