@@ -1,9 +1,7 @@
 #!/usr/bin/env python
- 
-import pytest
-from .critical_path_finder import CriticalPath
-import exceptions
 
+import pytest
+from .critical_path_finder import CriticalPath, RunBeforeSaveException, MissingInputsException, NodeWeightsDuplicateValues
 from networkx.exception import NetworkXUnfeasible
 from networkx import DiGraph
 
@@ -42,10 +40,10 @@ def test_critical_path(node_weights_map, graph, node_weights_map_complex, graph_
     assert cp_complex.validate() == None
     assert cp_complex.find() == {(1,2): 1, (2,3): 2, (3, 4): 3, (4, 5): 4}
 
-    with pytest.raises(exceptions.MissingInputsException):
+    with pytest.raises(MissingInputsException):
         CriticalPath().validate()
 
-    with pytest.raises(exceptions.MissingInputsException):
+    with pytest.raises(MissingInputsException):
         CriticalPath().find()
     
 def test_critical_path_with_cycle(node_weights_map, graph_cycle):
@@ -78,7 +76,7 @@ def test_load_weights():
     # TODO: Positive test
 
     # TODO: Negative test
-    with pytest.raises(exceptions.NodeWeightsDuplicateValues):
+    with pytest.raises(NodeWeightsDuplicateValues):
         pass
     pass
 
@@ -87,11 +85,11 @@ def test_load_weights():
 def test_save_image(node_weights_map, graph, tmpdir):
     path = tmpdir.join("some/path")
 
-    with pytest.raises(exceptions.MissingInputsException):
+    with pytest.raises(MissingInputsException):
         CriticalPath().save_image(path=path)
 
     # https://docs.pytest.org/en/6.2.x/tmpdir.html
-    with pytest.raises(exceptions.RunBeforeSaveException):
+    with pytest.raises(RunBeforeSaveException):
         CriticalPath(node_weights_map=node_weights_map, graph=graph).save_image(path=path.strpath)
 
     cp = CriticalPath(node_weights_map=node_weights_map, graph=graph)
