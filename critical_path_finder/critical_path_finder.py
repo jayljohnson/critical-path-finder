@@ -8,11 +8,13 @@ from uuid import uuid4
 from csv import reader
 import click
 
-from .exceptions import NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
+import exceptions
+
+# NodeWeightsDuplicateValues, MissingInputsException, RunBeforeSaveException
 
 logging.basicConfig(
     encoding='utf-8',
-    level=logging.WARNING,
+    level=logging.DEBUG,
     format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
@@ -97,7 +99,7 @@ class CriticalPath():
                 if not node_weights_map.get(node):
                     node_weights_map[node] = int(weight)
                 else:
-                    raise NodeWeightsDuplicateValues(
+                    raise exceptions.NodeWeightsDuplicateValues(
                         "The node weights csv file requires unique node values in column 1.  "
                         f"Node value `{node}` is duplicated on row {i+1}: {node_weights[i]}"
                     )
@@ -109,10 +111,10 @@ class CriticalPath():
         Validate that required instance variables exist before running calcs
         """
         if not self.node_weights_map:
-            raise MissingInputsException("Undefined instance variable: self.node_weights_map")
+            raise exceptions.MissingInputsException("Undefined instance variable: self.node_weights_map")
 
         if not self.graph:
-            raise MissingInputsException("Undefined instance variable: self.graph")
+            raise exceptions.MissingInputsException("Undefined instance variable: self.graph")
 
     def find(self) -> typing.Dict[tuple, int]:
         """
@@ -152,7 +154,7 @@ class CriticalPath():
 
         self.validate()
         if not self.critical_path_edges:
-            raise RunBeforeSaveException(
+            raise exceptions.RunBeforeSaveException(
                 "Undefined instance variable: self.critical_path_edges."
                 "Must call self.find() to calculate the critical path, "
                 "before calling self.save_image()."
