@@ -86,12 +86,12 @@ def test_save_image(node_weights_map, graph, tmpdir):
     path = tmpdir.join("some/path")
 
     with pytest.raises(MissingInputsException):
-        CriticalPath().save_image(path=path)
+        CriticalPath().save_image(fname=path)
 
     # https://docs.pytest.org/en/6.2.x/tmpdir.html
     with pytest.raises(RunBeforeSaveException):
-        CriticalPath(node_weights_map=node_weights_map, graph=graph).save_image(path=path.strpath)
+        CriticalPath(node_weights_map=node_weights_map, graph=graph).save_image(fname=path.strpath)
 
     cp = CriticalPath(node_weights_map=node_weights_map, graph=graph)
     cp.find()
-    assert cp.save_image(path=path.strpath) == None
+    assert cp.save_image(fname=path.strpath) == None

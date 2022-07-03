@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import typing
+from io import BytesIO
 import logging
 import networkx as nx
 import matplotlib.pyplot as plt  # type: ignore
@@ -49,11 +50,11 @@ class CriticalPath():
         self.graph = graph
         self.node_weights_map = node_weights_map
         # Output
-        self.critical_path_edges = None
+        self.critical_path_edges: typing.List[tuple] = None
         # Used mostly for validation; persisted for quick access to the sum of the critical path edge weights
-        self.critical_path_length = None
+        self.critical_path_length: int = None
         # Location of the graph's image file
-        self.image_file_path = None
+        self.image: typing.Union[str, BytesIO] = None
 
     @property
     def edge_weights(self) -> typing.Dict[tuple, int]:
@@ -151,7 +152,7 @@ class CriticalPath():
 
         return result
 
-    def save_image(self, path: str) -> str:
+    def save_image(self, fname: typing.Union[str, BytesIO]) -> typing.Union[str, BytesIO]:
         """
         Generate an image of the graph with the critical path highlighted in a different color than other edges
         """
@@ -185,12 +186,19 @@ class CriticalPath():
         logging.debug(f"\tEdge color list: {edge_color_list} ")
         nx.draw_planar(self.graph, with_labels=True, edge_color=edge_color_list)
 
-        self.image_file_path = f"{path}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
-        logging.info(f"\tSaving image to: {self.image_file_path} ")
-        plt.savefig(self.image_file_path, format=FILE_EXTENSION)
+        if type(fname) == str:
+            self.image = f"{fname}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}" 
+        elif type(fname) == BytesIO:
+            self.image = fname
+        else:
+            raise Exception(f"Unhandled file type {fname(type)}")
+
+        logging.info(f"\tSaving image to: {self.image} ")
+        plt.savefig(self.image, format=FILE_EXTENSION)
         logging.debug("\tDone saving image")
         plt.clf()
-        return self.image_file_path
+
+        return self.image
 
     @staticmethod
     def _get_edges_from_ordered_list_of_nodes(nodes: typing.List[any]) -> typing.List[tuple]:
@@ -236,7 +244,7 @@ if __name__ == "__main__":
         cp.load_weights(path=weights)
         critical_path = cp.find()
         if image_target:
-            cp.save_image(path=image_target)
+            cp.save_image(fname=image_target)
         else:
             logging.debug("Skipping image creation.  To save an image, run with the -i flag set to the image target directory.")
         import sys
