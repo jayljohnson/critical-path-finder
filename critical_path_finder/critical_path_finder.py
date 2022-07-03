@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from ast import Bytes
 import typing
 from io import BytesIO
 import logging
