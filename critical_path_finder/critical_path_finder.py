@@ -188,12 +188,14 @@ class CriticalPath():
 
         if type(fname) == str:
             self.image = f"{fname}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}" 
+            logging.info(f"\tSaving image to file path: {self.image} ")
         elif type(fname) == BytesIO:
             self.image = fname
+            self.image.name = f"{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
+            logging.info(f"\tSaving image to file object named: {self.image.name} ")
         else:
             raise Exception(f"Unhandled file type {fname(type)}")
 
-        logging.info(f"\tSaving image to: {self.image} ")
         plt.savefig(self.image, format=FILE_EXTENSION)
         logging.debug("\tDone saving image")
         plt.clf()
