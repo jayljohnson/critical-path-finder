@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import sys
+from io import BytesIO
 import pytest
 from .critical_path_finder import CriticalPath, RunBeforeSaveException, MissingInputsException, NodeWeightsDuplicateValues
 from networkx.exception import NetworkXUnfeasible
@@ -81,17 +83,20 @@ def test_load_weights():
     pass
 
 
-@pytest.mark.skip(reason="Needs handling for image write to filesystem")
+# @pytest.mark.skip(reason="Needs handling for image write to filesystem")
 def test_save_image(node_weights_map, graph, tmpdir):
-    path = tmpdir.join("some/path")
+    path = BytesIO()
 
     with pytest.raises(MissingInputsException):
         CriticalPath().save_image(fname=path)
 
     # https://docs.pytest.org/en/6.2.x/tmpdir.html
     with pytest.raises(RunBeforeSaveException):
-        CriticalPath(node_weights_map=node_weights_map, graph=graph).save_image(fname=path.strpath)
+        CriticalPath(node_weights_map=node_weights_map, graph=graph).save_image(fname=path)
 
     cp = CriticalPath(node_weights_map=node_weights_map, graph=graph)
     cp.find()
-    assert cp.save_image(fname=path.strpath) == None
+    fileobj = cp.save_image(fname=path)
+    assert type(fileobj) == BytesIO
+    # To identify if file generation logic changed, resulting in different file size. If file looks okay update the size value
+    assert sys.getsizeof(fileobj) == 11376
