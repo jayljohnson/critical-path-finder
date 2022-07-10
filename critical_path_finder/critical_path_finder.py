@@ -77,24 +77,6 @@ class CriticalPath():
         logging.debug(f"Edge weights: {result}")
         return result
 
-
-    def load_graph_from_dot_file(self, path: str) -> None:
-        """
-        Reads a graphviz .dot file representing a digraph.
-        """
-        logging.info("Loading graph from dot file")
-        G = nx.DiGraph(nx.nx_pydot.read_dot(path))
-        # Cleanup newlines in the .dot file that get loaded as nodes
-        G.remove_node("\\n")
-    
-        logging.debug(
-            f"\tGraph loaded: {G}"
-            f"\tNodes: {G.nodes}"
-            f"\tEdges: {G.edges}"
-            )
-        self.graph = G
-
-
     def load_weights(self, path: str) -> None:
         """
         Load weights from a csv file containing the node and the node weight.  
@@ -227,6 +209,38 @@ class CriticalPath():
             "\tEdges: {G.edges}"
             )
         return G
+
+    @staticmethod
+    def _get_digraph_from_dotviz(path: str) -> nx.DiGraph:
+        """
+        Reads a graphviz .dot file representing a digraph. 
+        Path can be a filesystem path or a string containing the data
+        """
+        logging.info("Loading graph from dot file")
+        G = nx.DiGraph(nx.nx_pydot.read_dot(path))
+        # Cleanup newlines in the .dot file that get loaded as nodes
+        G.remove_node("\\n")
+    
+        logging.debug(
+            f"\tGraph loaded: {G}"
+            f"\tNodes: {G.nodes}"
+            f"\tEdges: {G.edges}"
+            )
+        return G
+
+    def load_graph_from_dot_file(self, path: str) -> None:
+        """
+        Reads a graphviz .dot file representing a digraph.
+        """
+        logging.info("Loading graph from dot file")
+        G = self._get_digraph_from_dotviz(path=path)
+    
+        logging.debug(
+            f"\tGraph loaded: {G}"
+            f"\tNodes: {G.nodes}"
+            f"\tEdges: {G.edges}"
+            )
+        self.graph = G
 
 
 if __name__ == "__main__":
