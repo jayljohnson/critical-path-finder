@@ -219,7 +219,9 @@ class CriticalPath():
         logging.info("Loading graph from dot file")
         G = nx.DiGraph(nx.nx_pydot.read_dot(path))
         # Cleanup newlines in the .dot file that get loaded as nodes
-        G.remove_node("\\n")
+
+        if G.has_node("\\n"):
+            G.remove_node("\\n")
     
         logging.debug(
             f"\tGraph loaded: {G}"
