@@ -211,7 +211,7 @@ class CriticalPath():
         return G
 
     @staticmethod
-    def _get_edge_tuples_from_dotviz(path: str) -> nx.DiGraph:
+    def _get_edge_tuples_from_dotviz(path: str) -> typing.List[typing.Tuple]:
         """
         Reads a graphviz .dot file representing a digraph. 
         Path can be a filesystem path or a string containing the data
