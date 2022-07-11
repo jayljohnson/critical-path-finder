@@ -134,7 +134,7 @@ class CriticalPath():
 
         return result
 
-    def save_image(self, fname: typing.Union[str, BytesIO], base_path: str = "") -> typing.Union[str, BytesIO]:
+    def save_image(self, fname: typing.Union[str, BytesIO]) -> typing.Union[str, BytesIO]:
         """
         Generate an image of the graph with the critical path highlighted in a different color than other edges
         """
@@ -174,7 +174,7 @@ class CriticalPath():
             logging.info(f"\tSaving image to file path: {self.image} ")
         elif type(fname) == BytesIO:
             self.image = fname
-            self.image.name = f"{base_path}/{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
+            self.image.name = f"{FILENAME_PREFIX}-{uuid4()}.{FILE_EXTENSION}"
             logging.info(f"\tSaving image to file object named: {self.image.name} ")
         else:
             raise Exception(f"Unhandled file type {fname(type)}")
@@ -218,8 +218,8 @@ class CriticalPath():
         """
         logging.info("Loading graph from dot file")
         G = nx.DiGraph(nx.nx_pydot.read_dot(path))
+        
         # Cleanup newlines in the .dot file that get loaded as nodes
-
         if G.has_node("\\n"):
             G.remove_node("\\n")
     
