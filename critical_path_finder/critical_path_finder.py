@@ -211,7 +211,7 @@ class CriticalPath():
         return G
 
     @staticmethod
-    def _get_digraph_from_dotviz(path: str) -> nx.DiGraph:
+    def _get_edge_tuples_from_dotviz(path: str) -> typing.List[typing.Tuple]:
         """
         Reads a graphviz .dot file representing a digraph. 
         Path can be a filesystem path or a string containing the data
@@ -228,14 +228,15 @@ class CriticalPath():
             f"\tNodes: {G.nodes}"
             f"\tEdges: {G.edges}"
             )
-        return G
+        return nx.to_edgelist(G)
 
     def load_graph_from_dot_file(self, path: str) -> None:
         """
         Reads a graphviz .dot file representing a digraph.
         """
         logging.info("Loading graph from dot file")
-        G = self._get_digraph_from_dotviz(path=path)
+        graph_edges = self._get_edge_tuples_from_dotviz(path=path)
+        G = self._get_digraph_from_tuples(graph_edges)
     
         logging.debug(
             f"\tGraph loaded: {G}"
