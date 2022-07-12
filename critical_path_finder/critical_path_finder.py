@@ -17,15 +17,19 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-class MissingInputsException(Exception):
+class CalculationError(Exception):
     pass
 
-
-class RunBeforeSaveException(Exception):
+class MissingInputsException(CalculationError):
     pass
 
+class RunBeforeSaveException(CalculationError):
+    pass
 
-class NodeWeightsDuplicateValues(Exception):
+class NodeWeightsDuplicateValues(CalculationError):
+    pass
+
+class MustBeDirectedAcyclicGraph(CalculationError):
     pass
 
 
@@ -204,11 +208,21 @@ class CriticalPath():
         logging.info("Loading graph from list of tuples")
         G = nx.DiGraph(graph)
         logging.debug(
-            f"\tGraph loaded: {G}"
+            f"\tGraph loaded from list of tuples: {G}"
             f"\tNodes: {G.nodes}"
-            "\tEdges: {G.edges}"
+            f"\tEdges: {G.edges}"
             )
-        return G
+
+        try:
+            first_cycle = nx.find_cycle(G, orientation='original')
+            if first_cycle:
+                raise MustBeDirectedAcyclicGraph(
+                    f"Circular reference detected: {first_cycle}.  "
+                    "The input graph must be an acyclic directed graph.  Fix the circular reference and try again."
+                    )
+        except nx.exception.NetworkXNoCycle:
+            return G
+
 
     @staticmethod
     def _get_edge_tuples_from_dotviz(path: str) -> typing.List[typing.Tuple]:
@@ -224,11 +238,11 @@ class CriticalPath():
             G.remove_node("\\n")
     
         logging.debug(
-            f"\tGraph loaded: {G}"
+            f"\tGraph loaded from dot file: {G}"
             f"\tNodes: {G.nodes}"
             f"\tEdges: {G.edges}"
             )
-        return nx.to_edgelist(G)
+        return list(G.edges)
 
     def load_graph_from_dot_file(self, path: str) -> None:
         """
@@ -244,6 +258,7 @@ class CriticalPath():
             f"\tEdges: {G.edges}"
             )
         self.graph = G
+        return G
 
 
 if __name__ == "__main__":
